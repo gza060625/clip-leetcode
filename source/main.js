@@ -1,9 +1,30 @@
-const MAIN_COLOR = "#0CB345";
+const MAIN_COLOR = "#FEFAE0";
 const ALT_COLOR = "transparent";
 const TEXT_COLOR = "#ffffff";
-const BUTTON_ACTION_TEXT = "Copied!";
+// const BUTTON_ACTION_TEXT = "Done!";
 const BUTTON_ACTION_WAIT_TIME = 1000;
 const WAIT_TIME = 1000;
+const BUTTON_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#819067">
+<path d="M16 12.9V17.1C16 20.6 14.6 22 11.1 22H6.9C3.4 22 2 20.6 2 17.1V12.9C2 9.4 3.4 8 6.9 8H11.1C14.6 8 16 9.4 16 12.9Z" />
+<path d="M17.0998 2H12.8998C9.81668 2 8.37074 3.09409 8.06951 5.73901C8.00649 6.29235 8.46476 6.75 9.02167 6.75H11.0998C15.2998 6.75 17.2498 8.7 17.2498 12.9V14.9781C17.2498 15.535 17.7074 15.9933 18.2608 15.9303C20.9057 15.629 21.9998 14.1831 21.9998 11.1V6.9C21.9998 3.4 20.5998 2 17.0998 2Z" "/>
+</svg>
+    `;
+const BUTTON_ACTION_TEXT = `
+<svg xmlns = "http://www.w3.org/2000/svg" xmlns: xlink = "http://www.w3.org/1999/xlink" viewBox = "0 -1.5 11 11" version = "1.1" fill="#819067">
+    <title>done_mini [#1484]</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Dribbble-Light-Preview" transform="translate(-304.000000, -366.000000)" fill="#819067">
+            <g id="icons" transform="translate(56.000000, 160.000000)">
+                <polygon id="done_mini-[#1484]" points="259 207.6 252.2317 214 252.2306 213.999 252.2306 214 248 210 249.6918 208.4 252.2306 210.8 257.3082 206"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>
+`;
+
 
 // Object containing button text and extra styles
 const BUTTON_MAP = {
@@ -12,8 +33,8 @@ const BUTTON_MAP = {
     extra: "margin-right: 1rem; width: 80px;",
   },
   copyMarkdown: {
-    text: "Copy Markdown",
-    extra: "width: 128px;",
+    text: "Copy",
+    extra: "width: 32px;",
   },
 };
 
@@ -48,8 +69,8 @@ const MARKDOWN = {
   "</strong>": "** ",
   "<pre>": "\n```\n",
   "</pre>": "```\n\n",
-  "<code>": "<code>",
-  "</code>": "</code>",
+  "<code>": "\`",
+  "</code>": "\`",
   "&lt;": "<",
   "&gt;": ">",
   "<sup>": "^",
@@ -67,12 +88,25 @@ const copyText = (isMarkdown, targetObj) => {
 
   // Try to find the elements for the old version of the website.
   let title;
+  let level;
   let descriptionContent;
   let text;
   let html;
 
   // Get title
   title = targetObj.titleDom.innerText;
+  title = title.replace(/^(\d+)(\.)/, (_, num, dot) => {
+    return num.padStart(4, '0') + dot;
+  });
+
+
+  // Get level
+  level = ""
+  if (targetObj.level) {
+    level = targetObj.level.innerText;
+    level = "**" + level + "**" + "\n";
+  }
+
 
   // Get main problem description
   descriptionContent = targetObj.descriptionDom;
@@ -103,7 +137,7 @@ const copyText = (isMarkdown, targetObj) => {
       );
     });
     // Format the markdown string and add the title and URL.
-    value = `# [${title}](${url})\n\n${htmlToMarkdown
+    value = `# [${title}](${url})\n\n${level}\n${htmlToMarkdown
       .replace(/(\n){2,}/g, "\n\n")
       .trim()}`;
   } else {
@@ -176,6 +210,8 @@ setTimeout(() => {
     {
       name: "dynamicLayout",
       titleDom: document.querySelector(".text-title-large"),
+      level: document.querySelector(".text-title-large").parentElement.parentElement.nextElementSibling.firstChild,
+      buttonTarget: document.querySelector(".text-title-large").parentElement.parentElement.nextElementSibling,
       descriptionDom: document.querySelector(
         "[data-track-load=description_content]"
       ),
@@ -223,14 +259,19 @@ setTimeout(() => {
       font-size: 10px;
       cursor: pointer;
       text-align: center;
+      width: 32px;
     `;
 
     // Loop through the buttons and add them to the button container.
-    const buttons = ["copy", "copyMarkdown"];
+    // const buttons = ["copy", "copyMarkdown"];
+    const buttons = ["copyMarkdown"];
     buttons.forEach((button) => {
       const _button = document.createElement("div");
+
+
+      _button.innerHTML = BUTTON_SVG;
       // Styling.
-      _button.innerText = BUTTON_MAP[button].text;
+      // _button.innerText = BUTTON_MAP[button].text;
       _button.style = BUTTON_MAP[button].extra
         ? buttonStyle + BUTTON_MAP[button].extra
         : buttonStyle;
@@ -238,9 +279,12 @@ setTimeout(() => {
       // Event listeners.
       _button.addEventListener("click", () => {
         copyText(button === "copyMarkdown", targetObject);
-        _button.innerText = BUTTON_ACTION_TEXT;
+        _button.innerHTML = BUTTON_ACTION_TEXT;
         setTimeout(
-          () => (_button.innerText = BUTTON_MAP[button].text),
+          () => (
+            // _button.innerText = BUTTON_MAP[button].text
+            _button.innerHTML = BUTTON_SVG
+          ),
           BUTTON_ACTION_WAIT_TIME
         );
       });
@@ -260,6 +304,11 @@ setTimeout(() => {
     });
 
     // Add the button container to the parent element.
-    target.parentElement.appendChild(buttonContainer);
+    if (targetObject.buttonTarget) {
+      targetObject.buttonTarget.appendChild(buttonContainer)
+    }
+    else {
+      target.parentElement.appendChild(buttonContainer);
+    }
   }
 }, WAIT_TIME);

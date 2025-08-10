@@ -255,7 +255,7 @@ setTimeout(() => {
       color: ${MAIN_COLOR};
       background: ${ALT_COLOR};
       border-radius: 12px;
-      border: 1px solid ${MAIN_COLOR};
+      // border: 1px solid ${MAIN_COLOR};
       font-size: 10px;
       cursor: pointer;
       text-align: center;

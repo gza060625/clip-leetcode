@@ -42,6 +42,8 @@ const BUTTON_MAP = {
 const MARKDOWN = {
   "<div>": "",
   "</div>": "",
+  "<button.*?>": "",
+  "</button>": "",
   "<p>": "",
   "</p>": "",
   "<u>": "",

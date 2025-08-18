@@ -160,7 +160,7 @@ const copyText = (isMarkdown, targetObj) => {
 };
 
 // Set a timeout to give the page time to load before adding the buttons.
-setTimeout(() => {
+function execute() {
   // Target Layouts
   const TARGETS = [
     {
@@ -313,4 +313,47 @@ setTimeout(() => {
       target.parentElement.appendChild(buttonContainer);
     }
   }
-}, WAIT_TIME);
+}
+
+
+function waitForElement(selector, timeout = 30000) {
+    return new Promise((resolve, reject) => {
+        const element = document.querySelector(selector);
+        if (element) {
+            resolve(element);
+            return;
+        }
+
+        const observer = new MutationObserver((mutations, obs) => {
+            const el = document.querySelector(selector);
+            if (el) {
+                resolve(el);
+                obs.disconnect();
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+        });
+
+        // Optional: timeout after a certain period
+        setTimeout(() => {
+            reject(new Error('Element not found within timeout.'));
+            observer.disconnect();
+        }, timeout);
+    });
+}
+
+
+
+
+
+waitForElement('.text-title-large')
+    .then((el) => {
+        console.log('Title appeared:', el);
+        execute();
+    })
+    .catch((err) => {
+        console.error(err);
+    });
